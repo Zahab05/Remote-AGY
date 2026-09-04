@@ -2,8 +2,8 @@ name: "SLCM Task Detector 24/7"
 
 on:
   schedule:
-    # Berjalan otomatis setiap 4 jam sekali
-    - cron: '0 */4 * * *'
+    # Berjalan otomatis setiap 3 jam sekali
+    - cron: '0 */3 * * *'
   workflow_dispatch:
     # Memungkinkan pemicuan manual kapan saja dari tab Actions di GitHub
     inputs:

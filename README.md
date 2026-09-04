@@ -162,7 +162,7 @@ Jalankan daemon agar sistem memeriksa portal secara otomatis setiap 15 menit dan
 
 ## ⚡ Otomatisasi 24/7 dengan GitHub Actions (Tanpa Komputer Menyala)
 
-Workflow [`.github/workflows/check_tasks.yml`](.github/workflows/check_tasks.yml) telah disiapkan agar GitHub secara mandiri memeriksa tugas portal kampus setiap **4 jam** (hemat kuota GitHub Actions).
+Workflow [`.github/workflows/check_tasks.yml`](.github/workflows/check_tasks.yml) telah disiapkan agar GitHub secara mandiri memeriksa tugas portal kampus setiap **3 jam** (hemat kuota GitHub Actions).
 
 ### Cara Menghubungkan Kredensial ke GitHub Actions:
 1. Buka repositori Anda di GitHub melalui browser.
