@@ -1,0 +1,4 @@
+{
+  "name": "Remote-AGY",
+  "postStartCommand": "bash /workspaces/Remote-AGY/scripts/autostart.sh"
+}
