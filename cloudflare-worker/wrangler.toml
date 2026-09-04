@@ -1,0 +1,10 @@
+name = "remote-agy-relay"
+main = "worker.js"
+compatibility_date = "2024-01-01"
+
+# Environment Variables (Secrets di Cloudflare Dashboard):
+# TELEGRAM_BOT_TOKEN
+# TELEGRAM_CHAT_ID
+# GITHUB_PAT
+# CODESPACE_NAME = "symmetrical-space-couscous-7vp47x55p954frqxg"
+# GITHUB_REPO = "Zahab05/Remote-AGY"

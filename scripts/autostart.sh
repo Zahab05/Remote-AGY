@@ -44,6 +44,10 @@ else
   log "[✓] Sesi 'agy-bot' berhasil diaktifkan di background!"
 fi
 
+# 4. Periksa dan Eksekusi Antrean Tugas yang Sudah Disetujui
+log "[+] Memeriksa antrean tugas yang berstatus APPROVED..."
+python3 "$WORKSPACE_DIR/run.py" --process-approved >> "$LOG_FILE" 2>&1 &
+
 log "=================================================="
 log "✅ Seluruh service Remote-AGY siap digunakan!"
 log "=================================================="

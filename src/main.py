@@ -172,6 +172,7 @@ def main():
     parser.add_argument("--list-tasks", action="store_true", help="Tampilkan daftar tugas yang tersimpan di database")
     parser.add_argument("--approve", type=str, help="Setujui tugas tertentu berdasarkan ID tugas untuk langsung dikerjakan AGY")
     parser.add_argument("--login-ui", action="store_true", help="Lakukan login SSO UI untuk membuat/memperbarui session cookie")
+    parser.add_argument("--process-approved", action="store_true", help="Proses dan eksekusi tugas yang berstatus APPROVED di antrean")
     args = parser.parse_args()
 
     orchestrator = RemoteAGYOrchestrator()
@@ -187,6 +188,13 @@ def main():
         for t in tasks:
             print(f"[{t['status']:<9}] ID: {t['id']:<15} | {t['difficulty']:<7} | {t['course_name']} - {t['title']}")
         print("-" * 80)
+    elif args.process_approved:
+        approved = orchestrator.db.get_approved_tasks()
+        if not approved:
+            print("[*] Tidak ada tugas di antrean APPROVED.")
+        for task in approved:
+            print(f"[+] Menjalankan tugas antrean: {task['title']}...")
+            orchestrator.executor.execute_task(task, callback_notifier=orchestrator.notifier)
     elif args.approve:
         task = orchestrator.db.get_assignment(args.approve)
         if not task:

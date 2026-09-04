@@ -1,0 +1,38 @@
+name: "Process Remote Approval"
+
+on:
+  repository_dispatch:
+    types: [task_approved]
+  workflow_dispatch:
+    inputs:
+      task_id:
+        description: "ID Tugas yang disetujui"
+        required: true
+
+jobs:
+  handle-approval:
+    name: "Queue & Wake AGY"
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: "Checkout Repository"
+        uses: actions/checkout@v4
+
+      - name: "Log Approved Task"
+        run: |
+          TASK_ID="${{ github.event.client_payload.task_id || inputs.task_id }}"
+          echo "[+] Tugas Disetujui: $TASK_ID"
+          echo "Approved at: $(date)" >> approved_tasks.log
+          echo "$TASK_ID" >> approved_tasks.log
+
+      - name: "Send Wakeup Notification to Telegram"
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: |
+          TASK_ID="${{ github.event.client_payload.task_id || inputs.task_id }}"
+          if [ -n "$TELEGRAM_BOT_TOKEN" ] && [ -n "$TELEGRAM_CHAT_ID" ]; then
+            curl -s -X POST "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" \
+              -H "Content-Type: application/json" \
+              -d "{\"chat_id\": \"${TELEGRAM_CHAT_ID}\", \"text\": \"⚡ *GitHub Dispatch*: Persetujuan untuk tugas \`${TASK_ID}\` telah dicatat di cloud antrean.\", \"parse_mode\": \"Markdown\"}" || true
+          fi

@@ -112,3 +112,10 @@ class DatabaseManager:
             cursor = conn.cursor()
             cursor.execute("SELECT * FROM assignments WHERE status IN ('DETECTED', 'NOTIFIED') ORDER BY created_at ASC")
             return [dict(row) for row in cursor.fetchall()]
+
+    def get_approved_tasks(self) -> List[Dict[str, Any]]:
+        with self._get_connection() as conn:
+            cursor = conn.cursor()
+            cursor.execute("SELECT * FROM assignments WHERE status = 'APPROVED' ORDER BY updated_at ASC")
+            return [dict(row) for row in cursor.fetchall()]
+
