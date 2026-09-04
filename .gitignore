@@ -1,0 +1,29 @@
+# Environment & Secrets
+config/.env
+config/ui_session.json
+*.env
+
+# SQLite Databases
+*.db
+*.sqlite3
+
+# Python cache & artifacts
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+
+# Tasks execution directory & zips
+tasks/*
+!tasks/.gitkeep
+*.zip
+*.log
+
+# Playwright cache
+.cache/
+.tailscale-state/
+
+# Private Remote Access & Keys
+tailscale_qr.png
+*.png
+setup-remote-access.sh

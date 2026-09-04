@@ -1,0 +1,45 @@
+# Remote-AGY Configuration File
+
+system:
+  poll_interval_seconds: 900  # Cek tugas baru tiap 15 menit
+  task_storage_dir: "tasks"   # Folder pengerjaan tugas oleh AGY
+  db_path: "storage.db"
+
+portal:
+  # Pilihan active_adapter: "ui_satu" atau "mock"
+  active_adapter: "ui_satu"
+  ui_satu:
+    sso_url: "https://sso.ui.ac.id/cas/login"
+    portal_url: "https://satu.ui.ac.id"
+    emas_url: "https://emas.ui.ac.id"
+    # Mode login: "credentials" (otomatis via Playwright) atau "cookies" (menggunakan session cookies tersimpan)
+    auth_mode: "credentials"
+    headless: true
+    session_file: "config/ui_session.json"
+
+notifications:
+  telegram:
+    enabled: true
+    bot_token: ""           # Dari @BotFather di Telegram
+    allowed_chat_ids: []    # ID chat Telegram Anda (dapat dari @userinfobot)
+    alert_on_new_task: true
+
+  whatsapp:
+    enabled: false
+    # Opsi integrasi gateway WhatsApp (misal Fonnte, Wablas, atau local bridge)
+    provider: "generic_webhook"
+    api_url: ""
+    api_token: ""
+    target_phone: ""
+
+ai_analyzer:
+  use_gemini: true
+  model_name: "gemini-2.0-flash"
+  api_key: ""              # Opsional jika menggunakan Antigravity environment key
+
+executor:
+  runner_type: "headless"   # "headless" menggunakan `agy -p`
+  agy_binary: "agy"
+  timeout_seconds: 1800     # Maksimal 30 menit per pengerjaan tugas
+  auto_zip_artifacts: true
+  dangerously_skip_permissions: true
