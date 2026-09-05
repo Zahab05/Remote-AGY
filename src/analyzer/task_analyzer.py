@@ -23,7 +23,7 @@ class TaskAnalyzer:
             self.provider = self.config.get("provider", "auto")
 
         self.agy_model = self.config.get("agy_model", "gemini-3.7-flash-medium")
-        self.api_model = self.config.get("api_model", self.config.get("model_name", "gemini-2.5-flash"))
+        self.api_model = self.config.get("api_model", self.config.get("model_name", "gemini-flash-latest"))
 
     def analyze(self, raw_task: Dict[str, Any]) -> Dict[str, Any]:
         """
@@ -207,41 +207,55 @@ class TaskAnalyzer:
         if not self.api_key:
             return None
 
-        try:
-            import httpx
-            logger.info(f"Menganalisis tugas via Cloud Gemini API (Model: {self.api_model})...")
-            url = f"https://generativelanguage.googleapis.com/v1beta/models/{self.api_model}:generateContent?key={self.api_key}"
-            prompt_content = f"""
-            Anda adalah asisten akademik. Analisis tugas kuliah berikut:
-            Mata Kuliah: {course}
-            Judul: {title}
-            Deskripsi: {desc}
-            Deadline: {due_date}
+        import httpx
+        models_to_try = [self.api_model]
+        if "gemini-3.6-flash" not in models_to_try:
+            models_to_try.append("gemini-3.6-flash")
 
-            Kembalikan HANYA JSON valid:
-            {{
-                "difficulty": "Easy" | "Medium" | "Hard",
-                "reason": "<alasan singkat dalam 1 kalimat>",
-                "estimated_hours": <angka estimasi jam kerja>,
-                "recommendations": "<saran implementasi teknis>"
-            }}
-            """
-            payload = {
-                "contents": [{"parts": [{"text": prompt_content}]}],
-                "generationConfig": {"response_mime_type": "application/json"}
-            }
-            res = httpx.post(url, json=payload, timeout=20.0)
-            if res.status_code == 200:
-                data = res.json()
-                text = data["candidates"][0]["content"]["parts"][0]["text"]
-                parsed = self._extract_json(text)
-                if parsed:
-                    parsed["engine"] = f"cloud_api ({self.api_model})"
-                    return parsed
-            else:
-                logger.warning(f"Gemini API returned status {res.status_code}: {res.text[:200]}")
-        except Exception as e:
-            logger.warning(f"Gagal memanggil Gemini API: {e}. Menggunakan analisis heuristik.")
+        prompt_content = f"""
+        Anda adalah asisten akademik. Analisis tugas kuliah berikut:
+        Mata Kuliah: {course}
+        Judul: {title}
+        Deskripsi: {desc}
+        Deadline: {due_date}
+
+        Kembalikan HANYA JSON valid:
+        {{
+            "difficulty": "Easy" | "Medium" | "Hard",
+            "reason": "<alasan singkat dalam 1 kalimat>",
+            "estimated_hours": <angka estimasi jam kerja>,
+            "recommendations": "<saran implementasi teknis>"
+        }}
+        """
+        payload = {
+            "contents": [{"parts": [{"text": prompt_content}]}],
+            "generationConfig": {"response_mime_type": "application/json"}
+        }
+
+        for model in models_to_try:
+            try:
+                logger.info(f"Menganalisis tugas via Cloud Gemini API (Model: {model})...")
+                url = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent"
+                headers = {
+                    "Content-Type": "application/json",
+                    "X-goog-api-key": self.api_key
+                }
+                res = httpx.post(url, headers=headers, json=payload, timeout=20.0)
+                if res.status_code == 200:
+                    data = res.json()
+                    text = data["candidates"][0]["content"]["parts"][0]["text"]
+                    parsed = self._extract_json(text)
+                    if parsed:
+                        parsed["engine"] = f"cloud_api ({model})"
+                        return parsed
+                elif res.status_code in [503, 429]:
+                    logger.warning(f"Model {model} sedang padat ({res.status_code}), mencoba model alternatif...")
+                    continue
+                else:
+                    logger.warning(f"Gemini API ({model}) status {res.status_code}: {res.text[:200]}")
+            except Exception as e:
+                logger.warning(f"Gagal memanggil Gemini API ({model}): {e}")
+
         return None
 
     def _extract_json(self, raw_text: str) -> Optional[Dict[str, Any]]:
