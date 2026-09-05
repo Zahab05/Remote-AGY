@@ -1,4 +1,5 @@
 import os
+import html
 import asyncio
 import logging
 import threading
@@ -159,15 +160,23 @@ class TelegramBot(BaseNotifier):
         task_id = task["id"]
         difficulty = task.get("difficulty", "Unknown")
         diff_emoji = "🔴" if difficulty == "Hard" else ("🟡" if difficulty == "Medium" else "🟢")
+        course = html.escape(str(task.get('course_name', '-')))
+        title = html.escape(str(task.get('title', '-')))
+        due_date = html.escape(str(task.get('due_date_display', task.get('due_date', '-'))))
+        remaining = html.escape(str(task.get('remaining_time', '-')))
+        reason = html.escape(str(task.get('difficulty_reason', '-')))
+        engine = html.escape(str(task.get('engine', '')))
+        engine_str = f"🤖 <b>Engine AI</b>: <code>{engine}</code>\n" if engine else ""
 
         text = (
-            f"🚨 *[TUGAS BARU TERDETEKSI DI SLCM]* 🚨\n\n"
-            f"📚 *Mata Kuliah*: {task.get('course_name', '-')}\n"
-            f"📝 *Judul Tugas*: {task.get('title', '-')}\n"
-            f"⏰ *Batas Waktu*: {task.get('due_date_display', task.get('due_date', '-'))}\n"
-            f"⏳ *Sisa Waktu*: {task.get('remaining_time', '-')}\n"
-            f"⚡ *Tingkat Kesulitan*: {diff_emoji} *{difficulty}*\n"
-            f"💡 *Catatan Analisis*: {task.get('difficulty_reason', '-')}\n\n"
+            f"🚨 <b>[TUGAS BARU TERDETEKSI DI SLCM]</b> 🚨\n\n"
+            f"📚 <b>Mata Kuliah</b>: {course}\n"
+            f"📝 <b>Judul Tugas</b>: {title}\n"
+            f"⏰ <b>Batas Waktu</b>: {due_date}\n"
+            f"⏳ <b>Sisa Waktu</b>: {remaining}\n"
+            f"⚡ <b>Tingkat Kesulitan</b>: {diff_emoji} <b>{difficulty}</b>\n"
+            f"💡 <b>Catatan Analisis</b>: {reason}\n"
+            f"{engine_str}\n"
             f"Apakah Anda ingin AGY mengerjakan tugas ini sekarang?"
         )
 
@@ -187,11 +196,20 @@ class TelegramBot(BaseNotifier):
                     await bot.send_message(
                         chat_id=cid,
                         text=text,
-                        parse_mode="Markdown",
+                        parse_mode="HTML",
                         reply_markup=reply_markup
                     )
                 except Exception as e:
-                    logger.error(f"Gagal mengirim alert ke chat {cid}: {e}")
+                    logger.warning(f"Gagal kirim HTML ke chat {cid} ({e}), mencoba kirim teks polos...")
+                    try:
+                        plain_text = f"🚨 [TUGAS BARU TERDETEKSI DI SLCM] 🚨\n\nMata Kuliah: {task.get('course_name')}\nJudul: {task.get('title')}\nDeadline: {task.get('due_date')}\nKesulitan: {difficulty}\nCatatan: {task.get('difficulty_reason')}\n{task.get('engine', '')}"
+                        await bot.send_message(
+                            chat_id=cid,
+                            text=plain_text,
+                            reply_markup=reply_markup
+                        )
+                    except Exception as e2:
+                        logger.error(f"Gagal mengirim alert ke chat {cid}: {e2}")
 
         self._run_async(_send())
         return True

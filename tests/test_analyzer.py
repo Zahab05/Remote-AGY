@@ -38,5 +38,14 @@ class TestTaskAnalyzer(unittest.TestCase):
         res = self.analyzer.analyze(raw_task)
         self.assertEqual(res["difficulty"], "Hard")
 
+    def test_extract_json(self):
+        sample_markdown = '```json\n{"difficulty": "hard", "reason": "Algoritma rumit", "estimated_hours": 4, "recommendations": ["Baca materi", "Bikin diagram"]}\n```'
+        parsed = self.analyzer._extract_json(sample_markdown)
+        self.assertIsNotNone(parsed)
+        self.assertEqual(parsed["difficulty"], "Hard")
+        self.assertEqual(parsed["reason"], "Algoritma rumit")
+        self.assertEqual(parsed["estimated_hours"], 4.0)
+        self.assertIn("Baca materi; Bikin diagram", parsed["recommendations"])
+
 if __name__ == "__main__":
     unittest.main()

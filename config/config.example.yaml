@@ -33,9 +33,11 @@ notifications:
     target_phone: ""
 
 ai_analyzer:
-  use_gemini: true
-  model_name: "gemini-2.0-flash"
-  api_key: ""              # Opsional jika menggunakan Antigravity environment key
+  enabled: true
+  provider: "auto"             # "auto" (prioritas agy lokal -> api cloud -> heuristik), "agy", "gemini_api", "heuristic"
+  agy_model: "gemini-3.7-flash-medium" # Model untuk AGY di laptop (opsi lain: "gemini-3.6-flash-high")
+  api_model: "gemini-2.5-flash"        # Model untuk Cloud REST API di GitHub Actions
+  api_key: ""                  # Diambil otomatis dari environment variable GEMINI_API_KEY
 
 executor:
   runner_type: "headless"   # "headless" menggunakan `agy -p`
