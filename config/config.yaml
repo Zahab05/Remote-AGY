@@ -3,7 +3,11 @@
 system:
   poll_interval_seconds: 900  # Cek tugas baru tiap 15 menit
   task_storage_dir: "tasks"   # Folder pengerjaan tugas oleh AGY
-  db_path: "storage.db"
+  db_path: "storage.db"       # Fallback database SQLite lokal
+  # Turso Cloud Database (Sinkronisasi 24/7 Laptop <-> GitHub Actions)
+  turso:
+    database_url: ""          # Otomatis dimuat dari env TURSO_DATABASE_URL
+    auth_token: ""            # Otomatis dimuat dari env TURSO_AUTH_TOKEN
 
 portal:
   # Pilihan active_adapter: "ui_satu" atau "mock"

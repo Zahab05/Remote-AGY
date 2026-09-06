@@ -49,5 +49,32 @@ class TestDatabaseManager(unittest.TestCase):
         self.assertEqual(updated["difficulty"], "Easy")
         self.assertEqual(updated["difficulty_reason"], "Desain ERD standar")
 
+    def test_turso_dual_mode_with_libsql(self):
+        cloud_test_file = "test_libsql_cloud.db"
+        if os.path.exists(cloud_test_file):
+            os.remove(cloud_test_file)
+
+        db_cloud = DatabaseManager("local_fallback.db", config={"turso": {"database_url": f"file:{cloud_test_file}"}})
+        self.assertTrue(db_cloud.is_cloud)
+
+        item = {
+            "id": "cloud-task-1",
+            "portal": "ui_satu",
+            "course_name": "Kecerdasan Buatan",
+            "title": "Tugas A* Search",
+            "description": "Implementasi pencarian jalur terpendek",
+            "due_date": "2026-09-20 23:59:00"
+        }
+        self.assertTrue(db_cloud.save_assignment(item))
+        retrieved = db_cloud.get_assignment("cloud-task-1")
+        self.assertIsNotNone(retrieved)
+        self.assertEqual(retrieved["title"], "Tugas A* Search")
+
+        db_cloud.close()
+        if os.path.exists(cloud_test_file):
+            os.remove(cloud_test_file)
+        if os.path.exists("local_fallback.db"):
+            os.remove("local_fallback.db")
+
 if __name__ == "__main__":
     unittest.main()

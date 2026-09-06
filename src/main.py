@@ -41,7 +41,7 @@ class RemoteAGYOrchestrator:
     def __init__(self, config_path: str = "config/config.yaml"):
         self.config = load_config(config_path)
         self.db_path = self.config.get("system", {}).get("db_path", "storage.db")
-        self.db = DatabaseManager(self.db_path)
+        self.db = DatabaseManager(self.db_path, config=self.config.get("system", {}))
         
         self.analyzer = TaskAnalyzer(self.config.get("ai_analyzer", {}))
         self.executor = AGYRunner(self.db, self.config.get("executor", {}))
